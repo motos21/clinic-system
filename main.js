@@ -2,6 +2,7 @@
 // グローバル変数定義
 // ==================================================================
 let db; 
+let currentPatientDocId = null; 
 
 // ==================================================================
 // Firebaseの初期化処理
@@ -82,7 +83,7 @@ async function loadAndRenderPatientsForAdmin() {
         tableBody.innerHTML = "";
         patientList.forEach(patient => {
             const row = document.createElement("tr");
-            row.innerHTML = `<td><span class="math-inline">\{patient\.id\}</td\><td\></span>{patient.name}</td><td><span class="math-inline">\{patient\.startDate\}</td\><td\></span>{patient.totalStages || ''}</td><td><span class="math-inline">\{patient\.exchangeInterval \|\| ''\}日</td\><td\></span>{patient.wearTime || ''}時間</td>`;
+            row.innerHTML = `<td>${patient.id}</td><td>${patient.name}</td><td>${patient.startDate}</td><td>${patient.totalStages || ''}</td><td>${patient.exchangeInterval || ''}日</td><td>${patient.wearTime || ''}時間</td>`;
             tableBody.appendChild(row);
         });
     } catch (error) {
@@ -111,8 +112,9 @@ async function initializeLiff() {
     } else {
       document.getElementById('treatment-status').style.display = 'block';
       document.getElementById('initial-registration').style.display = 'none';
-      const patientData = patientQuery.docs[0].data();
-      displayTreatmentStatus(patientData);
+      const patientDoc = patientQuery.docs[0];
+      currentPatientDocId = patientDoc.id;
+      displayTreatmentStatus(patientDoc.data());
     }
   } catch (error) {
     console.error("LIFFの処理に失敗しました:", error);
@@ -139,6 +141,32 @@ if (registrationForm) {
   });
 }
 
+const reportButton = document.getElementById("report-missed-day-button");
+if (reportButton) {
+    reportButton.addEventListener("click", async () => {
+        if (!currentPatientDocId) {
+            alert("患者情報が見つかりません。");
+            return;
+        }
+        if (!confirm("本当に『つけ忘れ』を記録しますか？この操作は取り消せません。")) {
+            return;
+        }
+        try {
+            const patientRef = db.collection("patients").doc(currentPatientDocId);
+            const patientDoc = await patientRef.get();
+            const currentMissedDays = patientDoc.data().missedDays || 0;
+            const newMissedDays = currentMissedDays + 1;
+            await patientRef.update({ missedDays: newMissedDays });
+            const updatedPatientDoc = await patientRef.get();
+            displayTreatmentStatus(updatedPatientDoc.data());
+            alert(`つけ忘れを記録しました。合計: ${newMissedDays}日`);
+        } catch (error) {
+            console.error("つけ忘れ日数の更新に失敗しました:", error);
+            alert("エラーが発生しました。");
+        }
+    });
+}
+
 function displayTreatmentStatus(patient) {
   const exchangeInterval = patient.exchangeInterval || 7;
   const missedDays = patient.missedDays || 0;
@@ -160,7 +188,18 @@ function displayTreatmentStatus(patient) {
 }
 
 // ==================================================================
-// 初期実行処理 (★★★ここが重要な修正点★★★)
+// 初期実行処理 (★★★これが抜け落ちていた最重要部分です★★★)
 // ==================================================================
 
-// 管理者画面（patient-list.html）にいるかどうかを、テーブルの存在
+// 管理者画面（patient-list.html）にいるかどうかを、テーブルの存在で判断
+const adminTableEl = document.getElementById("patient-table-body");
+if (adminTableEl) {
+    // 管理者画面にいる場合のみ、患者リストを読み込んで表示
+    loadAndRenderPatientsForAdmin();
+}
+
+// LIFF環境かどうかを、liffオブジェクトの存在で判断
+if (typeof liff !== 'undefined') {
+    // LIFF環境の場合のみ、LIFFの初期化を実行
+    initializeLiff();
+}
