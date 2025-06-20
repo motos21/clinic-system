@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>マウスピース矯正サポート</title>
+    
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         body { font-family: sans-serif; padding: 1em; }
         .card { border: 1px solid #ccc; padding: 1em; border-radius: 8px; margin-bottom: 1em; }
@@ -33,6 +37,7 @@
             次の交換予定日: <span id="next-exchange-date">--</span>
         </p>
     </div>
+
     <hr>
     <p>あなたのユーザーID: <span id="user-id">読み込み中...</span></p>
 
