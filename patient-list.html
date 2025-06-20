@@ -13,7 +13,8 @@
                 <th>カルテ番号</th>
                 <th>患者氏名</th>
                 <th>治療開始日</th>
-                <th>予定枚数</th> </tr>
+                <th>予定枚数</th>
+                <th>交換日数</th> <th>目標装着時間</th> </tr>
         </thead>
         <tbody id="patient-table-body">
             </tbody>
@@ -37,7 +38,22 @@
         </div>
         <div>
             <label for="total-stages">予定枚数</label>
-            <input type="number" id="total-stages" required> </div>
+            <input type="number" id="total-stages" required>
+        </div>
+        <div>
+            <label for="exchange-interval">交換日数</label>
+            <select id="exchange-interval" required>
+                <option value="7">7日</option>
+                <option value="10">10日</option>
+            </select>
+        </div>
+        <div>
+            <label for="wear-time">目標装着時間</label>
+            <select id="wear-time" required>
+                <option value="20">20時間</option>
+                <option value="22">22時間</option>
+            </select>
+        </div>
         <button type="submit">この内容で登録する</button>
     </form>
 
@@ -45,8 +61,6 @@
 
     <a href="index.html">ログアウト</a>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
