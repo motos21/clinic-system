@@ -2,7 +2,7 @@
 // グローバル変数定義
 // ==================================================================
 let db; 
-let currentPatientDocId = null; // ログイン中の患者のFirestoreドキュメントIDを保存
+let currentPatientDocId = null; 
 
 // ==================================================================
 // Firebaseの初期化処理
@@ -59,7 +59,7 @@ if (addPatientForm) {
         exchangeInterval: parseInt(document.getElementById("exchange-interval").value, 10),
         wearTime: parseInt(document.getElementById("wear-time").value, 10),
         createdAt: new Date(),
-        missedDays: 0 // ★つけ忘れ日数の初期値を設定
+        missedDays: 0
     };
     try {
         await db.collection("patients").add(newPatient);
@@ -84,7 +84,17 @@ async function loadAndRenderPatientsForAdmin() {
         tableBody.innerHTML = "";
         patientList.forEach(patient => {
             const row = document.createElement("tr");
-            row.innerHTML = `<td>${patient.id}</td><td>${patient.name}</td><td>${patient.startDate}</td><td>${patient.totalStages || ''}</td><td>${patient.exchangeInterval || ''}日</td><td>${patient.wearTime || ''}時間</td>`;
+            
+            // ★★★ ここが今回の変更点 ★★★
+            // 患者名の部分を、詳細ページへのリンクに変更します
+            row.innerHTML = `
+                <td>${patient.id}</td>
+                <td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td>
+                <td>${patient.startDate}</td>
+                <td>${patient.totalStages || ''}</td>
+                <td>${patient.exchangeInterval || ''}日</td>
+                <td>${patient.wearTime || ''}時間</td>
+            `;
             tableBody.appendChild(row);
         });
     } catch (error) {
@@ -114,7 +124,7 @@ async function initializeLiff() {
       document.getElementById('treatment-status').style.display = 'block';
       document.getElementById('initial-registration').style.display = 'none';
       const patientDoc = patientQuery.docs[0];
-      currentPatientDocId = patientDoc.id; // ★ドキュメントIDを保存
+      currentPatientDocId = patientDoc.id;
       displayTreatmentStatus(patientDoc.data());
     }
   } catch (error) {
@@ -142,7 +152,6 @@ if (registrationForm) {
   });
 }
 
-// 「つけ忘れ報告」ボタンの処理 (★★★ここが新しいロジック★★★)
 const reportButton = document.getElementById("report-missed-day-button");
 if (reportButton) {
     reportButton.addEventListener("click", async () => {
@@ -150,39 +159,24 @@ if (reportButton) {
             alert("患者情報が見つかりません。");
             return;
         }
-
-        // 1. ダイアログを表示して、ユーザーに入力を促す
         const daysInput = prompt("何日間つけ忘れましたか？\n数字で入力してください。", "1");
-
-        // 2. 入力内容をチェック
         if (daysInput === null || daysInput.trim() === "") {
-            return; // キャンセルされたら何もしない
+            return; 
         }
         const daysToAdd = parseInt(daysInput, 10);
         if (isNaN(daysToAdd) || daysToAdd <= 0) {
             alert("有効な数字を入力してください。");
             return;
         }
-
         try {
             const patientRef = db.collection("patients").doc(currentPatientDocId);
-            
-            // 3. 現在の日数を取得し、入力された日数を加算する
             const patientDoc = await patientRef.get();
             const currentMissedDays = patientDoc.data().missedDays || 0;
             const newMissedDays = currentMissedDays + daysToAdd;
-
-            // 4. Firestoreのデータを更新
-            await patientRef.update({
-                missedDays: newMissedDays
-            });
-            
-            // 5. 画面の表示を更新
+            await patientRef.update({ missedDays: newMissedDays });
             const updatedPatientDoc = await patientRef.get();
             displayTreatmentStatus(updatedPatientDoc.data());
-
             alert(`${daysToAdd}日間のつけ忘れを記録しました。合計: ${newMissedDays}日`);
-
         } catch (error) {
             console.error("つけ忘れ日数の更新に失敗しました:", error);
             alert("エラーが発生しました。");
@@ -190,31 +184,20 @@ if (reportButton) {
     });
 }
 
-// 治療状況を表示する機能
 function displayTreatmentStatus(patient) {
   const exchangeInterval = patient.exchangeInterval || 7;
   const missedDays = patient.missedDays || 0;
   const today = new Date();
   const startDate = new Date(patient.startDate);
-
-  // 治療開始からの経過日数
   const diffTime = today - startDate;
   const totalElapsedDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  // 有効な治療日数 = 経過日数 - つけ忘れ日数
   const effectiveDays = totalElapsedDays - missedDays;
-  
-  // 現在のステージを計算
   const currentStage = Math.floor(effectiveDays / exchangeInterval) + 1;
-  
-  // 次の交換まであと何日かを計算
   const daysIntoCurrentStage = effectiveDays % exchangeInterval;
   const daysUntilNext = exchangeInterval - daysIntoCurrentStage;
-  
   const nextExchangeDate = new Date();
   nextExchangeDate.setDate(today.getDate() + daysUntilNext);
 
-  // 画面に表示
   document.getElementById('current-stage').textContent = currentStage > 0 ? currentStage : 1;
   document.getElementById('total-stages').textContent = patient.totalStages;
   document.getElementById('next-exchange-date').textContent = nextExchangeDate.toLocaleDateString();
