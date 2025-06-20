@@ -14,7 +14,6 @@
 </head>
 <body>
     <h1>患者詳細</h1>
-    
     <div id="patient-info">
         <p><strong>カルテ番号:</strong> <span id="detail-id">...</span></p>
         <p><strong>患者氏名:</strong> <span id="detail-name">...</span></p>
@@ -23,7 +22,6 @@
         <p><strong>交換日数:</strong> <span id="detail-exchange-interval">...</span>日</p>
         <p><strong>つけ忘れ合計:</strong> <span id="detail-missed-days">...</span>日</p>
     </div>
-
     <hr>
     <h2>交換スケジュール</h2>
     <table>
@@ -33,13 +31,10 @@
                 <th>交換予定日</th>
             </tr>
         </thead>
-        <tbody id="schedule-table-body">
-            </tbody>
+        <tbody id="schedule-table-body"></tbody>
     </table>
-
     <hr>
     <a href="patient-list.html">患者一覧に戻る</a>
-
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="main.js"></script>

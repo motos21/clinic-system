@@ -7,7 +7,6 @@
 </head>
 <body>
     <h1>患者一覧</h1>
-
     <div style="margin-bottom: 1em; padding: 1em; border: 1px solid #ddd;">
         <h2>患者検索</h2>
         <form id="search-form" style="display: flex; gap: 10px; align-items: center;">
@@ -28,20 +27,39 @@
                 <th>目標装着時間</th>
             </tr>
         </thead>
-        <tbody id="patient-table-body">
-            </tbody>
+        <tbody id="patient-table-body"></tbody>
     </table>
-
-    <hr> 
-
+    <hr>
     <h2>新規患者登録</h2>
     <form id="add-patient-form">
-        </form>
-
+        <div>
+            <label for="patient-id">カルテ番号</label>
+            <input type="text" id="patient-id" required>
+        </div>
+        <div>
+            <label for="patient-name">患者氏名</label>
+            <input type="text" id="patient-name" required>
+        </div>
+        <div>
+            <label for="start-date">治療開始日</label>
+            <input type="date" id="start-date" required>
+        </div>
+        <div>
+            <label for="total-stages">予定枚数</label>
+            <input type="number" id="total-stages" required>
+        </div>
+        <div>
+            <label for="exchange-interval">交換日数</label>
+            <select id="exchange-interval" required><option value="7">7日</option><option value="10">10日</option></select>
+        </div>
+        <div>
+            <label for="wear-time">目標装着時間</label>
+            <select id="wear-time" required><option value="20">20時間</option><option value="22">22時間</option></select>
+        </div>
+        <button type="submit">この内容で登録する</button>
+    </form>
     <hr>
-
     <a href="index.html">ログアウト</a>
-
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="main.js"></script>
