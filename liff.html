@@ -5,12 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>マウスピース矯正サポート</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 1em; }
+        .card { border: 1px solid #ccc; padding: 1em; border-radius: 8px; margin-bottom: 1em; }
+        .card h2 { margin-top: 0; }
+    </style>
 </head>
 <body>
-    <h1>ようこそ！</h1>
-    <p>あなたの治療状況を表示します。</p>
+    <h1>マウスピース矯正サポート</h1>
+    
+    <div id="initial-registration" class="card" style="display: none;">
+        <h2>初回利用登録</h2>
+        <p>診察券に記載されているカルテ番号を入力し、ご自身の情報を登録してください。</p>
+        <form id="registration-form">
+            <label for="reg-patient-id">カルテ番号</label>
+            <input type="text" id="reg-patient-id" required>
+            <button type="submit">登録する</button>
+        </form>
+    </div>
+
+    <div id="treatment-status" class="card" style="display: none;">
+        <h2>現在の状況</h2>
+        <p>
+            ステージ: <span id="current-stage">--</span> / <span id="total-stages">--</span> 枚目
+        </p>
+        <p>
+            次の交換予定日: <span id="next-exchange-date">--</span>
+        </p>
+    </div>
+    <hr>
     <p>あなたのユーザーID: <span id="user-id">読み込み中...</span></p>
-    <p>お使いのLINEバージョン: <span id="line-version">読み込み中...</span></p>
 
     <script src="main.js"></script>
 </body>
