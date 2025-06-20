@@ -1,7 +1,13 @@
+// ==================================================================
+// グローバル変数定義
+// ==================================================================
 let db; 
-let fullPatientList = []; 
-let currentPatientDocId = null; 
+let fullPatientList = []; // 管理者画面の全患者リストを保存するための変数
+let currentPatientDocId = null; // LIFF画面で使う、ログイン中患者のFirestoreドキュメントID
 
+// ==================================================================
+// Firebaseの初期化処理
+// ==================================================================
 try {
   const firebaseConfig = {
     apiKey: "AIzaSyCAPRwg5mGMh8LRqCbRmoYwzqK-Msevv1g",
@@ -20,6 +26,9 @@ try {
   console.error("Firebaseの接続に失敗しました:", error);
 }
 
+// ==================================================================
+// ログインフォームの処理
+// ==================================================================
 const loginForm = document.getElementById("login-form");
 if (loginForm) {
   loginForm.addEventListener("submit", (event) => {
@@ -36,6 +45,9 @@ if (loginForm) {
   });
 }
 
+// ==================================================================
+// 患者登録フォームの処理
+// ==================================================================
 const addPatientForm = document.getElementById("add-patient-form");
 if (addPatientForm) {
   addPatientForm.addEventListener("submit", async (event) => {
@@ -61,6 +73,9 @@ if (addPatientForm) {
   });
 }
 
+// ==================================================================
+// 患者検索フォームの処理
+// ==================================================================
 const searchForm = document.getElementById("search-form");
 if (searchForm) {
     searchForm.addEventListener("submit", (event) => {
@@ -83,6 +98,9 @@ if (clearSearchButton) {
     });
 }
 
+// ==================================================================
+// データ処理と画面描画の機能（関数）
+// ==================================================================
 async function loadAndRenderPatientsForAdmin() {
     const tableBody = document.getElementById("patient-table-body");
     if (!tableBody) { return; }
@@ -101,7 +119,14 @@ function renderPatientList(patientsToDisplay) {
   tableBody.innerHTML = "";
   patientsToDisplay.forEach(patient => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td>${patient.id}</td><td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td><td>${patient.startDate}</td><td>${patient.totalStages || ''}</td><td>${patient.exchangeInterval || ''}日</td><td>${patient.wearTime || ''}時間</td>`;
+      row.innerHTML = `
+          <td>${patient.id}</td>
+          <td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td>
+          <td>${patient.startDate}</td>
+          <td>${patient.totalStages || ''}</td>
+          <td>${patient.exchangeInterval || ''}日</td>
+          <td>${patient.wearTime || ''}時間</td>
+      `;
       tableBody.appendChild(row);
   });
 }
@@ -122,32 +147,27 @@ async function loadPatientDetail() {
         document.getElementById("detail-total-stages").textContent = patient.totalStages;
         document.getElementById("detail-exchange-interval").textContent = patient.exchangeInterval;
         document.getElementById("detail-missed-days").textContent = patient.missedDays || 0;
-        const scheduleTableBody = document.getElementById("schedule-table-body");
-        scheduleTableBody.innerHTML = "";
-        const totalStages = parseInt(patient.totalStages, 10);
-        const startDate = new Date(patient.startDate);
-        const exchangeInterval = patient.exchangeInterval || 7;
-        const missedDays = patient.missedDays || 0;
-        for (let i = 1; i <= totalStages; i++) {
-            const row = document.createElement("tr");
-            const exchangeDate = new Date(startDate);
-            const daysToAdd = (i * exchangeInterval) + missedDays;
-            exchangeDate.setDate(startDate.getDate() + daysToAdd);
-            row.innerHTML = `<td>ステージ ${i}</td><td>${exchangeDate.toLocaleDateString()}</td>`;
-            scheduleTableBody.appendChild(row);
-        }
+        
+        renderScheduleTable(patient, "schedule-table-body");
     } catch (error) {
         console.error("患者詳細の読み込みに失敗しました:", error);
         patientInfoDiv.innerHTML = "<p>データの読み込み中にエラーが発生しました。</p>";
     }
 }
 
+// ==================================================================
+// LIFF関連の処理
+// ==================================================================
 async function initializeLiff() {
   try {
     await liff.init({ liffId: "2007606450-pl2Dn7YW" });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
     const profile = await liff.getProfile();
     document.getElementById("user-id").textContent = profile.userId;
+
     const patientQuery = await db.collection("patients").where("lineUserId", "==", profile.userId).get();
     if (patientQuery.empty) {
       document.getElementById('initial-registration').style.display = 'block';
@@ -157,7 +177,9 @@ async function initializeLiff() {
       document.getElementById('initial-registration').style.display = 'none';
       const patientDoc = patientQuery.docs[0];
       currentPatientDocId = patientDoc.id;
-      displayTreatmentStatus(patientDoc.data());
+      const patientData = patientDoc.data();
+      displayTreatmentStatus(patientData);
+      renderScheduleTable(patientData, "liff-schedule-table-body");
     }
   } catch (error) {
     console.error("LIFFの処理に失敗しました:", error);
@@ -199,7 +221,9 @@ if (reportButton) {
             const newMissedDays = currentMissedDays + daysToAdd;
             await patientRef.update({ missedDays: newMissedDays });
             const updatedPatientDoc = await patientRef.get();
-            displayTreatmentStatus(updatedPatientDoc.data());
+            const updatedPatientData = updatedPatientDoc.data();
+            displayTreatmentStatus(updatedPatientData);
+            renderScheduleTable(updatedPatientData, "liff-schedule-table-body");
             alert(`${daysToAdd}日間のつけ忘れを記録しました。合計: ${newMissedDays}日`);
         } catch (error) {
             console.error("つけ忘れ日数の更新に失敗しました:", error);
@@ -225,6 +249,24 @@ function displayTreatmentStatus(patient) {
   document.getElementById('total-stages').textContent = patient.totalStages;
   document.getElementById('next-exchange-date').textContent = nextExchangeDate.toLocaleDateString();
   document.getElementById('missed-days').textContent = missedDays;
+}
+
+function renderScheduleTable(patient, tableBodyId) {
+    const scheduleTableBody = document.getElementById(tableBodyId);
+    if (!scheduleTableBody) return;
+    scheduleTableBody.innerHTML = "";
+    const totalStages = parseInt(patient.totalStages, 10);
+    const startDate = new Date(patient.startDate);
+    const exchangeInterval = patient.exchangeInterval || 7;
+    const missedDays = patient.missedDays || 0;
+    for (let i = 1; i <= totalStages; i++) {
+        const row = document.createElement("tr");
+        const exchangeDate = new Date(startDate);
+        const daysToAdd = (i * exchangeInterval) + missedDays;
+        exchangeDate.setDate(startDate.getDate() + daysToAdd);
+        row.innerHTML = `<td>ステージ ${i}</td><td>${exchangeDate.toLocaleDateString()}</td>`;
+        scheduleTableBody.appendChild(row);
+    }
 }
 
 // ==================================================================

@@ -36,8 +36,24 @@
             <p>
                 つけ忘れ合計日数: <span id="missed-days">0</span> 日
             </p>
-            <button id="report-missed-day-button" class="contrast">今日つけ忘れたことを報告する</button>
-        </article>
+            <button id="report-missed-day-button" class="contrast">つけ忘れを報告する</button>
+
+            <details>
+                <summary>詳細な交換スケジュール</summary>
+                <figure>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ステージ</th>
+                                <th>交換予定日</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liff-schedule-table-body">
+                            </tbody>
+                    </table>
+                </figure>
+            </details>
+            </article>
         
         <footer><small>あなたのユーザーID: <span id="user-id">読み込み中...</span></small></footer>
     </main>
