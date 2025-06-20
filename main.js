@@ -32,37 +32,27 @@ if (loginForm) {
     const correctId = "test-clinic";
     const correctPassword = "password123";
     if (clinicIdValue === correctId && passwordValue === correctPassword) {
-      console.log("ログイン成功！患者一覧画面に移動します。");
       window.location.href = "patient-list.html";
     } else {
-      console.log("ログイン失敗：IDまたはパスワードが間違っています。");
       alert("IDまたはパスワードが間違っています。");
     }
   });
 }
 
 // ==================================================================
-// 患者登録フォームの処理 (★★★ここが変更点★★★)
+// 患者登録フォームの処理
 // ==================================================================
 const addPatientForm = document.getElementById("add-patient-form");
 if (addPatientForm) {
   addPatientForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const patientId = document.getElementById("patient-id").value;
-    const patientName = document.getElementById("patient-name").value;
-    const totalStages = document.getElementById("total-stages").value;
-    const startDate = document.getElementById("start-date").value;
-    // 新しい項目の値を取得
-    const exchangeInterval = document.getElementById("exchange-interval").value;
-    const wearTime = document.getElementById("wear-time").value;
-    
     const newPatient = {
-        id: patientId,
-        name: patientName,
-        startDate: startDate,
-        totalStages: totalStages,
-        exchangeInterval: parseInt(exchangeInterval, 10), // 文字列を数値に変換
-        wearTime: parseInt(wearTime, 10),                 // 文字列を数値に変換
+        id: document.getElementById("patient-id").value,
+        name: document.getElementById("patient-name").value,
+        startDate: document.getElementById("start-date").value,
+        totalStages: document.getElementById("total-stages").value,
+        exchangeInterval: parseInt(document.getElementById("exchange-interval").value, 10),
+        wearTime: parseInt(document.getElementById("wear-time").value, 10),
         createdAt: new Date()
     };
     try {
@@ -89,32 +79,91 @@ async function loadAndRenderPatientsForAdmin() {
         tableBody.innerHTML = "";
         patientList.forEach(patient => {
             const row = document.createElement("tr");
-            // ★★★テーブルに表示する内容も変更★★★
-            row.innerHTML = `
-                <td>${patient.id}</td>
-                <td>${patient.name}</td>
-                <td>${patient.startDate}</td>
-                <td>${patient.totalStages || ''}</td>
-                <td>${patient.exchangeInterval || ''}日</td>
-                <td>${patient.wearTime || ''}時間</td>
-            `;
+            row.innerHTML = `<td>${patient.id}</td><td>${patient.name}</td><td>${patient.startDate}</td><td>${patient.totalStages || ''}</td><td>${patient.exchangeInterval || ''}日</td><td>${patient.wearTime || ''}時間</td>`;
             tableBody.appendChild(row);
         });
     } catch (error) {
         console.error("データの読み込みに失敗しました: ", error);
     }
 }
-// (LIFF関連の関数は、今回は変更ありません)
-async function initializeLiff() { /* ... */ }
-function displayTreatmentStatus(patient) { /* ... */ }
+
+// ==================================================================
+// LIFF関連の処理
+// ==================================================================
+async function initializeLiff() {
+  try {
+    await liff.init({ liffId: "2007606450-pl2Dn7YW" });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    const profile = await liff.getProfile();
+    document.getElementById("user-id").textContent = profile.userId;
+
+    const patientQuery = await db.collection("patients").where("lineUserId", "==", profile.userId).get();
+
+    if (patientQuery.empty) {
+      document.getElementById('initial-registration').style.display = 'block';
+      document.getElementById('treatment-status').style.display = 'none';
+    } else {
+      document.getElementById('treatment-status').style.display = 'block';
+      document.getElementById('initial-registration').style.display = 'none';
+      const patientData = patientQuery.docs[0].data();
+      displayTreatmentStatus(patientData);
+    }
+  } catch (error) {
+    console.error("LIFFの処理に失敗しました:", error);
+    alert("エラーが発生しました。画面をリロードしてください。");
+  }
+}
+
+const registrationForm = document.getElementById("registration-form");
+if (registrationForm) {
+  registrationForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const patientIdToLink = document.getElementById("reg-patient-id").value;
+    const profile = await liff.getProfile();
+    const lineUserId = profile.userId;
+
+    const patientQuery = await db.collection("patients").where("id", "==", patientIdToLink).get();
+
+    if (patientQuery.empty) {
+      alert("入力されたカルテ番号が見つかりません。もう一度ご確認ください。");
+    } else {
+      const patientDoc = patientQuery.docs[0];
+      await patientDoc.ref.update({ lineUserId: lineUserId });
+      alert("登録が完了しました！");
+      window.location.reload();
+    }
+  });
+}
+
+function displayTreatmentStatus(patient) {
+  const exchangeInterval = patient.exchangeInterval;
+  const today = new Date();
+  const startDate = new Date(patient.startDate);
+  const diffTime = today - startDate;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  const currentStage = Math.ceil(diffDays / exchangeInterval);
+  const nextExchangeDays = (currentStage * exchangeInterval) - diffDays;
+  const nextExchangeDate = new Date();
+  nextExchangeDate.setDate(today.getDate() + nextExchangeDays);
+
+  document.getElementById('current-stage').textContent = currentStage;
+  document.getElementById('total-stages').textContent = patient.totalStages;
+  document.getElementById('next-exchange-date').textContent = nextExchangeDate.toLocaleDateString();
+}
 
 // ==================================================================
 // 初期実行処理
 // ==================================================================
 const adminTable = document.getElementById("patient-table-body");
 if (adminTable) {
-    loadAndRenderPatientsForAdmin();
+    (async () => {
+        await loadAndRenderPatientsForAdmin();
+    })();
 }
+
 if (typeof liff !== 'undefined') {
   initializeLiff();
 }

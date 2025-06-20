@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理者画面</title>
+    <title>管理者ログイン</title>
 </head>
 <body>
     <h1>管理者ログイン</h1>
 
     <form id="login-form">
-    <div>
-        <label for="clinic-id">医院ID</label>
-        <input type="text" id="clinic-id" name="clinicId">
-    </div>
-    <div>
-        <label for="password">パスワード</label>
-        <input type="password" id="password" name="password">
-    </div>
-    <button type="submit" id="login-button">ログイン</button>
-</form>
+        <div>
+            <label for="clinic-id">医院ID</label>
+            <input type="text" id="clinic-id" name="clinicId" required>
+        </div>
+        <div>
+            <label for="password">パスワード</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" id="login-button">ログイン</button>
+    </form>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="main.js"></script>
