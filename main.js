@@ -2,7 +2,8 @@
 // グローバル変数定義
 // ==================================================================
 let db; 
-let currentPatientDocId = null; 
+let currentPatientDocId = null;
+let fullPatientList = []; // 全患者リストを保存するための変数
 
 // ==================================================================
 // Firebaseの初期化処理
@@ -63,13 +64,38 @@ if (addPatientForm) {
     };
     try {
         await db.collection("patients").add(newPatient);
-        await loadAndRenderPatientsForAdmin();
+        await loadAndRenderPatientsForAdmin(); // 登録後にリストを再読み込み・再表示
     } catch (error) {
         console.error("Firestoreへの保存に失敗しました: ", error);
         alert("データの登録に失敗しました。");
     }
     addPatientForm.reset();
   });
+}
+
+// ==================================================================
+// 患者検索フォームの処理
+// ==================================================================
+const searchForm = document.getElementById("search-form");
+if (searchForm) {
+    searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const searchText = document.getElementById("search-id").value;
+        if (!searchText) {
+            renderPatientList(fullPatientList);
+            return;
+        }
+        const filteredPatients = fullPatientList.filter(patient => patient.id.includes(searchText));
+        renderPatientList(filteredPatients);
+    });
+}
+
+const clearSearchButton = document.getElementById("clear-search-button");
+if (clearSearchButton) {
+    clearSearchButton.addEventListener("click", () => {
+        document.getElementById("search-id").value = "";
+        renderPatientList(fullPatientList);
+    });
 }
 
 // ==================================================================
@@ -80,26 +106,29 @@ async function loadAndRenderPatientsForAdmin() {
     if (!tableBody) { return; }
     try {
         const snapshot = await db.collection("patients").orderBy("createdAt", "desc").get();
-        const patientList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-        tableBody.innerHTML = "";
-        patientList.forEach(patient => {
-            const row = document.createElement("tr");
-            
-            // ★★★ ここが今回の変更点 ★★★
-            // 患者名の部分を、詳細ページへのリンクに変更します
-            row.innerHTML = `
-                <td>${patient.id}</td>
-                <td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td>
-                <td>${patient.startDate}</td>
-                <td>${patient.totalStages || ''}</td>
-                <td>${patient.exchangeInterval || ''}日</td>
-                <td>${patient.wearTime || ''}時間</td>
-            `;
-            tableBody.appendChild(row);
-        });
+        fullPatientList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+        renderPatientList(fullPatientList);
     } catch (error) {
         console.error("データの読み込みに失敗しました: ", error);
     }
+}
+
+function renderPatientList(patientsToDisplay) {
+  const tableBody = document.getElementById("patient-table-body");
+  if (!tableBody) { return; }
+  tableBody.innerHTML = "";
+  patientsToDisplay.forEach(patient => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>${patient.id}</td>
+          <td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td>
+          <td>${patient.startDate}</td>
+          <td>${patient.totalStages || ''}</td>
+          <td>${patient.exchangeInterval || ''}日</td>
+          <td>${patient.wearTime || ''}時間</td>
+      `;
+      tableBody.appendChild(row);
+  });
 }
 
 // ==================================================================
