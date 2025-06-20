@@ -7,60 +7,64 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
 </head>
 <body>
-    <h1>患者一覧</h1>
-    <div style="margin-bottom: 1em; padding: 1em; border: 1px solid #ddd;">
-        <h2>患者検索</h2>
-        <form id="search-form" style="display: flex; gap: 10px; align-items: center;">
-            <label for="search-id">カルテ番号で検索:</label>
-            <input type="text" id="search-id" placeholder="カルテ番号を入力...">
-            <button type="submit">検索</button>
-            <button type="button" id="clear-search-button">クリア</button>
-        </form>
-    </div>
-    <table border="1" style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th>カルテ番号</th>
-                <th>患者氏名</th>
-                <th>治療開始日</th>
-                <th>予定枚数</th>
-                <th>交換日数</th>
-                <th>目標装着時間</th>
-            </tr>
-        </thead>
-        <tbody id="patient-table-body"></tbody>
-    </table>
-    <hr>
-    <h2>新規患者登録</h2>
-    <form id="add-patient-form">
-        <div>
-            <label for="patient-id">カルテ番号</label>
-            <input type="text" id="patient-id" required>
-        </div>
-        <div>
-            <label for="patient-name">患者氏名</label>
-            <input type="text" id="patient-name" required>
-        </div>
-        <div>
-            <label for="start-date">治療開始日</label>
-            <input type="date" id="start-date" required>
-        </div>
-        <div>
-            <label for="total-stages">予定枚数</label>
-            <input type="number" id="total-stages" required>
-        </div>
-        <div>
-            <label for="exchange-interval">交換日数</label>
-            <select id="exchange-interval" required><option value="7">7日</option><option value="10">10日</option></select>
-        </div>
-        <div>
-            <label for="wear-time">目標装着時間</label>
-            <select id="wear-time" required><option value="20">20時間</option><option value="22">22時間</option></select>
-        </div>
-        <button type="submit">この内容で登録する</button>
-    </form>
-    <hr>
-    <a href="index.html">ログアウト</a>
+    <main class="container">
+        <hgroup>
+            <h1>患者一覧</h1>
+            <h2><a href="index.html" onclick="return confirm('ログアウトしますか？')">ログアウト</a></h2>
+        </hgroup>
+
+        <article>
+            <hgroup>
+                <h2>患者検索</h2>
+            </hgroup>
+            <form id="search-form">
+                <div class="grid">
+                    <input type="text" id="search-id" placeholder="カルテ番号で検索...">
+                    <button type="submit">検索</button>
+                    <button type="button" id="clear-search-button" class="secondary">クリア</button>
+                </div>
+            </form>
+        </article>
+        
+        <article>
+            <figure>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>カルテ番号</th>
+                            <th>患者氏名</th>
+                            <th>治療開始日</th>
+                            <th>予定枚数</th>
+                            <th>交換日数</th>
+                            <th>目標装着時間</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-table-body"></tbody>
+                </table>
+            </figure>
+        </article>
+
+        <article>
+            <hgroup>
+                <h2>新規患者登録</h2>
+            </hgroup>
+            <form id="add-patient-form">
+                <div class="grid">
+                    <input type="text" id="patient-id" placeholder="カルテ番号" required>
+                    <input type="text" id="patient-name" placeholder="患者氏名" required>
+                </div>
+                <div class="grid">
+                    <input type="date" id="start-date" placeholder="治療開始日" required>
+                    <input type="number" id="total-stages" placeholder="予定枚数" required>
+                </div>
+                <div class="grid">
+                    <select id="exchange-interval" required><option value="" disabled selected>交換日数</option><option value="7">7日</option><option value="10">10日</option></select>
+                    <select id="wear-time" required><option value="" disabled selected>目標装着時間</option><option value="20">20時間</option><option value="22">22時間</option></select>
+                </div>
+                <button type="submit">この内容で登録する</button>
+            </form>
+        </article>
+    </main>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="main.js"></script>

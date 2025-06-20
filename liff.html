@@ -4,39 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>マウスピース矯正サポート</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 1em; }
-        .card { border: 1px solid #ccc; padding: 1em; border-radius: 8px; margin-bottom: 1em; }
-        .card h2 { margin-top: 0; }
-        button { padding: 0.8em; font-size: 1em; width: 100%; border: none; background-color: #007bff; color: white; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
 </head>
 <body>
-    <h1>マウスピース矯正サポート</h1>
-    <div id="initial-registration" class="card" style="display: none;">
-        <h2>初回利用登録</h2>
-        <p>診察券に記載されているカルテ番号を入力し、ご自身の情報を登録してください。</p>
-        <form id="registration-form">
-            <label for="reg-patient-id">カルテ番号</label>
-            <input type="text" id="reg-patient-id" required>
-            <button type="submit">登録する</button>
-        </form>
-    </div>
-    <div id="treatment-status" class="card" style="display: none;">
-        <h2>現在の状況</h2>
-        <p>ステージ: <span id="current-stage">--</span> / <span id="total-stages">--</span> 枚目</p>
-        <p>次の交換予定日: <span id="next-exchange-date">--</span></p>
-        <hr>
-        <p>つけ忘れ合計日数: <span id="missed-days">0</span> 日</p>
-        <button id="report-missed-day-button">今日つけ忘れたことを報告する</button>
-    </div>
-    <hr>
-    <p style="font-size: 0.8em; color: #666;">あなたのユーザーID: <span id="user-id">読み込み中...</span></p>
+    <main class="container">
+        <article id="initial-registration" style="display: none;">
+            <hgroup>
+                <h1>初回利用登録</h1>
+                <h2>診察券に記載されているカルテ番号を入力してください。</h2>
+            </hgroup>
+            <form id="registration-form">
+                <input type="text" id="reg-patient-id" placeholder="カルテ番号" required>
+                <button type="submit">登録する</button>
+            </form>
+        </article>
+
+        <article id="treatment-status" style="display: none;">
+            <hgroup>
+                <h1>現在の状況</h1>
+            </hgroup>
+            <p>
+                <strong>ステージ:</strong> <span id="current-stage">--</span> / <span id="total-stages">--</span> 枚目
+            </p>
+            <p>
+                <strong>次の交換予定日:</strong> <span id="next-exchange-date">--</span>
+            </p>
+            <hr>
+            <p>
+                つけ忘れ合計日数: <span id="missed-days">0</span> 日
+            </p>
+            <button id="report-missed-day-button" class="contrast">今日つけ忘れたことを報告する</button>
+        </article>
+        
+        <footer><small>あなたのユーザーID: <span id="user-id">読み込み中...</span></small></footer>
+    </main>
     <script src="main.js"></script>
 </body>
 </html>
