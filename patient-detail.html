@@ -4,10 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>患者詳細 - 管理者画面</title>
+    <style>
+        body { font-family: sans-serif; padding: 1em; }
+        #patient-info { border: 1px solid #eee; padding: 1em; margin-bottom: 1em; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
 </head>
 <body>
     <h1>患者詳細</h1>
-    <p>ここに、特定の患者さんの詳細情報が表示されます。</p>
+    
+    <div id="patient-info">
+        <p><strong>カルテ番号:</strong> <span id="detail-id">...</span></p>
+        <p><strong>患者氏名:</strong> <span id="detail-name">...</span></p>
+        <p><strong>治療開始日:</strong> <span id="detail-start-date">...</span></p>
+        <p><strong>予定枚数:</strong> <span id="detail-total-stages">...</span></p>
+        <p><strong>交換日数:</strong> <span id="detail-exchange-interval">...</span>日</p>
+        <p><strong>つけ忘れ合計:</strong> <span id="detail-missed-days">...</span>日</p>
+    </div>
+
+    <hr>
+    <h2>交換スケジュール</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ステージ</th>
+                <th>交換予定日</th>
+            </tr>
+        </thead>
+        <tbody id="schedule-table-body">
+            </tbody>
+    </table>
 
     <hr>
     <a href="patient-list.html">患者一覧に戻る</a>
