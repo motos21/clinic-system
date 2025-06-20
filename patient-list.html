@@ -7,8 +7,37 @@
 </head>
 <body>
     <h1>患者一覧</h1>
-    <p>ここに患者さんの一覧が表示されます。</p>
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th>カルテ番号</th>
+            <th>患者氏名</th>
+            <th>治療開始日</th>
+        </tr>
+    </thead>
+    <tbody id="patient-table-body">
+        </tbody>
+</table>
 
-    <a href="index.html">ログイン画面に戻る</a>
+    <hr> <h2>新規患者登録</h2>
+    <form id="add-patient-form">
+        <div>
+            <label for="patient-id">カルテ番号</label>
+            <input type="text" id="patient-id" required>
+        </div>
+        <div>
+            <label for="patient-name">患者氏名</label>
+            <input type="text" id="patient-name" required>
+        </div>
+        <div>
+            <label for="start-date">治療開始日</label>
+            <input type="date" id="start-date" required>
+        </div>
+        <button type="submit">この内容で登録する</button>
+    </form>
+
+    <hr> <a href="index.html">ログアウト</a>
+
+    <script src="main.js"></script>
 </body>
 </html>
