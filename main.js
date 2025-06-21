@@ -17,14 +17,10 @@ try {
     messagingSenderId: "15021094859",
     appId: "1:15021094859:web:e33fd4e47813499051284e"
   };
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
   db = firebase.firestore();
   console.log("Firebaseの接続に成功しました！");
-} catch (error) {
-  console.error("Firebaseの接続に失敗しました:", error);
-}
+} catch (error) { console.error("Firebaseの接続に失敗しました:", error); }
 
 // ==================================================================
 // ログインフォームの処理
@@ -52,17 +48,12 @@ const addPatientForm = document.getElementById("add-patient-form");
 if (addPatientForm) {
   addPatientForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    
-    // フォームから入力値を取得
     const exchangeInterval = parseInt(document.getElementById("exchange-interval").value, 10);
     const currentStage = parseInt(document.getElementById("current-stage-input").value, 10);
     const currentStageStartDate = new Date(document.getElementById("current-stage-start-date").value);
-
-    // 「本来の治療開始日（ステージ1の開始日）」を逆算する
     const daysToSubtract = (currentStage - 1) * exchangeInterval;
     const virtualStartDate = new Date(currentStageStartDate);
     virtualStartDate.setDate(currentStageStartDate.getDate() - daysToSubtract);
-    
     const newPatient = {
         id: document.getElementById("patient-id").value,
         name: document.getElementById("patient-name").value,
@@ -71,7 +62,8 @@ if (addPatientForm) {
         exchangeInterval: exchangeInterval,
         wearTime: parseInt(document.getElementById("wear-time").value, 10),
         createdAt: new Date(),
-        missedDays: 0
+        missedDays: 0,
+        stageOverrides: {}
     };
     try {
         await db.collection("patients").add(newPatient);
@@ -101,7 +93,6 @@ if (searchForm) {
         renderPatientList(filteredPatients);
     });
 }
-
 const clearSearchButton = document.getElementById("clear-search-button");
 if (clearSearchButton) {
     clearSearchButton.addEventListener("click", () => {
@@ -120,9 +111,7 @@ async function loadAndRenderPatientsForAdmin() {
         const snapshot = await db.collection("patients").orderBy("createdAt", "desc").get();
         fullPatientList = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
         renderPatientList(fullPatientList);
-    } catch (error) {
-        console.error("データの読み込みに失敗しました: ", error);
-    }
+    } catch (error) { console.error("データの読み込みに失敗しました: ", error); }
 }
 
 function renderPatientList(patientsToDisplay) {
@@ -131,14 +120,7 @@ function renderPatientList(patientsToDisplay) {
   tableBody.innerHTML = "";
   patientsToDisplay.forEach(patient => {
       const row = document.createElement("tr");
-      row.innerHTML = `
-          <td>${patient.id}</td>
-          <td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td>
-          <td>${patient.startDate}</td>
-          <td>${patient.totalStages || ''}</td>
-          <td>${patient.exchangeInterval || ''}日</td>
-          <td>${patient.wearTime || ''}時間</td>
-      `;
+      row.innerHTML = `<td>${patient.id}</td><td><a href="patient-detail.html?docId=${patient.docId}">${patient.name}</a></td><td>${patient.startDate}</td><td>${patient.totalStages || ''}</td><td>${patient.exchangeInterval || ''}日</td><td>${patient.wearTime || ''}時間</td>`;
       tableBody.appendChild(row);
   });
 }
@@ -153,6 +135,7 @@ async function loadPatientDetail() {
         const doc = await patientRef.get();
         if (!doc.exists) { patientInfoDiv.innerHTML = "<p>該当する患者データが見つかりません。</p>"; return; }
         const patient = doc.data();
+        currentPatientDocId = docId;
         document.getElementById("detail-id").textContent = patient.id;
         document.getElementById("detail-name").textContent = patient.name;
         document.getElementById("detail-start-date").textContent = patient.startDate;
@@ -160,10 +143,40 @@ async function loadPatientDetail() {
         document.getElementById("detail-exchange-interval").textContent = patient.exchangeInterval;
         document.getElementById("detail-missed-days").textContent = patient.missedDays || 0;
         renderScheduleTable(patient, "schedule-table-body");
-    } catch (error) {
-        console.error("患者詳細の読み込みに失敗しました:", error);
-        patientInfoDiv.innerHTML = "<p>データの読み込み中にエラーが発生しました。</p>";
-    }
+    } catch (error) { console.error("患者詳細の読み込みに失敗しました:", error); }
+}
+
+const scheduleTable = document.getElementById("schedule-table-body");
+if (scheduleTable) {
+    scheduleTable.addEventListener('click', async (event) => {
+        if (event.target.tagName === 'BUTTON' && event.target.dataset.stage) {
+            const stage = event.target.dataset.stage;
+            const patientRef = db.collection("patients").doc(currentPatientDocId);
+            const doc = await patientRef.get();
+            const patient = doc.data();
+            const overrides = patient.stageOverrides || {};
+            const currentInterval = (overrides && overrides[stage]) ? overrides[stage] : patient.exchangeInterval;
+            const newIntervalInput = prompt(`ステージ ${stage} の新しい交換日数（日）を入力してください。\n現在の設定: ${currentInterval}日\n(空欄でデフォルトに戻します)`, currentInterval);
+            if (newIntervalInput !== null) {
+                if (newIntervalInput.trim() === "" || parseInt(newIntervalInput) === patient.exchangeInterval) {
+                    delete overrides[stage];
+                } else {
+                    const newInterval = parseInt(newIntervalInput, 10);
+                    if (!isNaN(newInterval) && newInterval > 0) {
+                        overrides[stage] = newInterval;
+                    } else {
+                        alert("有効な数字を入力してください。");
+                        return;
+                    }
+                }
+                try {
+                    await patientRef.update({ stageOverrides: overrides });
+                    alert(`ステージ ${stage} の設定を更新しました。`);
+                    loadPatientDetail();
+                } catch (error) { console.error("交換日数の更新に失敗しました:", error); }
+            }
+        }
+    });
 }
 
 // ==================================================================
@@ -200,7 +213,7 @@ if (registrationForm) {
     const lineUserId = profile.userId;
     const patientQuery = await db.collection("patients").where("id", "==", patientIdToLink).get();
     if (patientQuery.empty) {
-      alert("入力されたカルテ番号が見つかりません。もう一度ご確認ください。");
+      alert("入力されたカルテ番号が見つかりません。");
     } else {
       const patientDoc = patientQuery.docs[0];
       await patientDoc.ref.update({ lineUserId: lineUserId });
@@ -234,40 +247,50 @@ if (reportButton) {
 }
 
 function displayTreatmentStatus(patient) {
-  const exchangeInterval = patient.exchangeInterval || 7;
-  const missedDays = patient.missedDays || 0;
+  const schedule = calculateSchedule(patient);
   const today = new Date();
-  const startDate = new Date(patient.startDate);
-  const diffTime = today - startDate;
-  const totalElapsedDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const effectiveDays = totalElapsedDays - missedDays;
-  const currentStage = Math.floor(effectiveDays / exchangeInterval) + 1;
-  const daysIntoCurrentStage = effectiveDays % exchangeInterval;
-  const daysUntilNext = exchangeInterval - daysIntoCurrentStage;
-  const nextExchangeDate = new Date();
-  nextExchangeDate.setDate(today.getDate() + daysUntilNext);
-  document.getElementById('current-stage').textContent = currentStage > 0 ? currentStage : 1;
+  today.setHours(0,0,0,0);
+  let currentStageItem = schedule.find(item => today < item.exchangeDate);
+  let currentStage = currentStageItem ? currentStageItem.stage : parseInt(patient.totalStages, 10);
+  let nextExchangeDate = currentStageItem ? currentStageItem.exchangeDate : schedule[schedule.length-1].exchangeDate;
+  document.getElementById('current-stage').textContent = currentStage;
   document.getElementById('total-stages').textContent = patient.totalStages;
   document.getElementById('next-exchange-date').textContent = nextExchangeDate.toLocaleDateString();
-  document.getElementById('missed-days').textContent = missedDays;
+  document.getElementById('missed-days').textContent = patient.missedDays || 0;
+}
+
+function calculateSchedule(patient) {
+    const schedule = [];
+    const totalStages = parseInt(patient.totalStages, 10);
+    const startDate = new Date(patient.startDate);
+    const defaultInterval = patient.exchangeInterval || 7;
+    const missedDays = patient.missedDays || 0;
+    const overrides = patient.stageOverrides || {};
+    let cumulativeDays = 0;
+    for (let i = 1; i <= totalStages; i++) {
+        const interval = overrides[String(i)] ? parseInt(overrides[String(i)], 10) : defaultInterval;
+        cumulativeDays += interval;
+        const exchangeDate = new Date(startDate);
+        exchangeDate.setDate(startDate.getDate() + cumulativeDays + missedDays);
+        schedule.push({ stage: i, exchangeDate: exchangeDate, interval: interval });
+    }
+    return schedule;
 }
 
 function renderScheduleTable(patient, tableBodyId) {
     const scheduleTableBody = document.getElementById(tableBodyId);
     if (!scheduleTableBody) return;
+    const schedule = calculateSchedule(patient);
     scheduleTableBody.innerHTML = "";
-    const totalStages = parseInt(patient.totalStages, 10);
-    const startDate = new Date(patient.startDate);
-    const exchangeInterval = patient.exchangeInterval || 7;
-    const missedDays = patient.missedDays || 0;
-    for (let i = 1; i <= totalStages; i++) {
+    schedule.forEach(item => {
         const row = document.createElement("tr");
-        const exchangeDate = new Date(startDate);
-        const daysToAdd = (i * exchangeInterval) + missedDays;
-        exchangeDate.setDate(startDate.getDate() + daysToAdd);
-        row.innerHTML = `<td>ステージ ${i}</td><td>${exchangeDate.toLocaleDateString()}</td>`;
+        let editButtonHtml = '';
+        if (tableBodyId === 'schedule-table-body') {
+            editButtonHtml = `<td><button class="outline edit-btn" data-stage="${item.stage}">編集</button></td>`;
+        }
+        row.innerHTML = `<td>ステージ ${item.stage}</td><td>${item.exchangeDate.toLocaleDateString()}</td><td>${item.interval} 日</td>${editButtonHtml}`;
         scheduleTableBody.appendChild(row);
-    }
+    });
 }
 
 // ==================================================================
@@ -275,7 +298,7 @@ function renderScheduleTable(patient, tableBodyId) {
 // ==================================================================
 const adminListPage = document.getElementById("patient-table-body");
 const adminDetailPage = document.getElementById("patient-info");
-if (adminListPage) {
+if (adminListPage && !adminDetailPage) {
     loadAndRenderPatientsForAdmin();
 } else if (adminDetailPage) {
     loadPatientDetail();

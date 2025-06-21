@@ -32,14 +32,12 @@
                         <tr>
                             <th>カルテ番号</th>
                             <th>患者氏名</th>
-                            <th>治療開始日(計算値)</th>
-                            <th>予定枚数</th>
-                            <th>交換日数</th>
-                            <th>目標装着時間</th>
+                            <th>治療開始日(計算値)</th> <th>予定枚数</th>
+                            <th>交換日数(基本)</th> <th>目標装着時間</th>
                         </tr>
                     </thead>
                     <tbody id="patient-table-body">
-                        </tbody>
+                    </tbody>
                 </table>
             </figure>
         </article>
@@ -55,7 +53,9 @@
                 </div>
                 <div class="grid">
                     <input type="number" id="current-stage-input" placeholder="現在のステージ番号" required>
-                    <input type="date" id="current-stage-start-date" required>
+                    <label for="current-stage-start-date">現在のステージの開始日
+                        <input type="date" id="current-stage-start-date" required>
+                    </label>
                 </div>
                 <div class="grid">
                     <input type="number" id="total-stages" placeholder="予定枚数" required>

@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>患者詳細 - 管理者画面</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+        body { font-family: sans-serif; padding: 1em; }
+        #patient-info { border: 1px solid #eee; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .edit-btn { padding: 2px 8px; font-size: 0.8em; }
+    </style>
 </head>
 <body>
     <main class="container">
@@ -15,9 +23,9 @@
         <article id="patient-info">
             <p><strong>カルテ番号:</strong> <span id="detail-id">...</span></p>
             <p><strong>患者氏名:</strong> <span id="detail-name">...</span></p>
-            <p><strong>治療開始日:</strong> <span id="detail-start-date">...</span></p>
+            <p><strong>治療開始日(計算値):</strong> <span id="detail-start-date">...</span></p>
             <p><strong>予定枚数:</strong> <span id="detail-total-stages">...</span></p>
-            <p><strong>交換日数:</strong> <span id="detail-exchange-interval">...</span>日</p>
+            <p><strong>交換日数(基本):</strong> <span id="detail-exchange-interval">...</span>日</p>
             <p><strong>つけ忘れ合計:</strong> <span id="detail-missed-days">...</span>日</p>
         </article>
         <article>
@@ -28,9 +36,12 @@
                         <tr>
                             <th>ステージ</th>
                             <th>交換予定日</th>
+                            <th>設定日数</th>
+                            <th>編集</th>
                         </tr>
                     </thead>
-                    <tbody id="schedule-table-body"></tbody>
+                    <tbody id="schedule-table-body">
+                        </tbody>
                 </table>
             </figure>
         </article>
