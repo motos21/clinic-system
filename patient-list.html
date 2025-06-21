@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>患者一覧 - 管理者画面</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-</head>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
     <main class="container">
         <hgroup>
@@ -14,38 +13,35 @@
         </hgroup>
 
         <article>
-            <hgroup>
-                <h2>患者検索</h2>
-            </hgroup>
-            <form id="search-form" style="display: flex; gap: 10px; align-items: center;">
-                <label for="search-id" class="secondary">カルテ番号で検索:</label>
-                <input type="text" id="search-id" placeholder="カルテ番号を入力...">
-                <button type="submit">検索</button>
-                <button type="button" id="clear-search-button" class="secondary">クリア</button>
+            <h2>患者検索</h2>
+            <form id="search-form">
+                 <div class="grid">
+                    <input type="text" id="search-id" placeholder="カルテ番号で検索...">
+                    <button type="submit">検索</button>
+                    <button type="button" id="clear-search-button" class="secondary">クリア</button>
+                </div>
             </form>
         </article>
         
         <article>
-            <figure>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>カルテ番号</th>
-                            <th>患者氏名</th>
-                            <th>治療開始日(計算値)</th> <th>予定枚数</th>
-                            <th>交換日数(基本)</th> <th>目標装着時間</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patient-table-body">
-                    </tbody>
-                </table>
-            </figure>
+            <table>
+                <thead>
+                    <tr>
+                        <th>カルテ番号</th>
+                        <th>患者氏名</th>
+                        <th>治療開始日(計算値)</th>
+                        <th>予定枚数</th>
+                        <th>交換日数(基本)</th>
+                        <th>目標装着時間</th>
+                    </tr>
+                </thead>
+                <tbody id="patient-table-body">
+                </tbody>
+            </table>
         </article>
 
         <article>
-            <hgroup>
-                <h2>新規患者登録</h2>
-            </hgroup>
+            <h2>新規患者登録</h2>
             <form id="add-patient-form">
                 <div class="grid">
                     <input type="text" id="patient-id" placeholder="カルテ番号" required>
@@ -59,17 +55,9 @@
                 </div>
                 <div class="grid">
                     <input type="number" id="total-stages" placeholder="予定枚数" required>
-                    <select id="exchange-interval" required>
-                        <option value="" disabled selected>交換日数</option>
-                        <option value="7">7日</option>
-                        <option value="10">10日</option>
-                    </select>
+                    <select id="exchange-interval" required><option value="" disabled selected>交換日数</option><option value="7">7日</option><option value="10">10日</option></select>
                 </div>
-                <select id="wear-time" required>
-                    <option value="" disabled selected>目標装着時間</option>
-                    <option value="20">20時間</option>
-                    <option value="22">22時間</option>
-                </select>
+                <select id="wear-time" required><option value="" disabled selected>目標装着時間</option><option value="20">20時間</option><option value="22">22時間</option></select>
                 <button type="submit">この内容で登録する</button>
             </form>
         </article>
