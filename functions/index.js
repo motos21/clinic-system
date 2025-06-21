@@ -11,7 +11,7 @@ const db = getFirestore();
 
 // あなたのチャネルアクセストークン
 const lineConfig = {
-  channelAccessToken: "ここに、あなたのチャネルアクセストークンを貼り付け"
+  channelAccessToken: "Xj9gXP9FePdospdkjz30fcr4z9DXrpVVRFmcplOAO+i9W3Ji1vbzwyVGrHBIxugPGqmxfN6vbYLxWnpZXSeyaU8tei6a+o0AOMkUXszyD/HKQPrbDwUvYBfwTFuSZLHpJJtPnQl0CWRD0B82egPSfwdB04t89/1O/w1cDnyilFU="
 };
 const lineClient = new line.Client(lineConfig);
 
