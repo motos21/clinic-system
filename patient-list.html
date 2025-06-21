@@ -17,12 +17,11 @@
             <hgroup>
                 <h2>患者検索</h2>
             </hgroup>
-            <form id="search-form">
-                <div class="grid">
-                    <input type="text" id="search-id" placeholder="カルテ番号で検索...">
-                    <button type="submit">検索</button>
-                    <button type="button" id="clear-search-button" class="secondary">クリア</button>
-                </div>
+            <form id="search-form" style="display: flex; gap: 10px; align-items: center;">
+                <label for="search-id" class="secondary">カルテ番号で検索:</label>
+                <input type="text" id="search-id" placeholder="カルテ番号を入力...">
+                <button type="submit">検索</button>
+                <button type="button" id="clear-search-button" class="secondary">クリア</button>
             </form>
         </article>
         
@@ -33,13 +32,14 @@
                         <tr>
                             <th>カルテ番号</th>
                             <th>患者氏名</th>
-                            <th>治療開始日</th>
+                            <th>治療開始日(計算値)</th>
                             <th>予定枚数</th>
                             <th>交換日数</th>
                             <th>目標装着時間</th>
                         </tr>
                     </thead>
-                    <tbody id="patient-table-body"></tbody>
+                    <tbody id="patient-table-body">
+                        </tbody>
                 </table>
             </figure>
         </article>
@@ -54,13 +54,22 @@
                     <input type="text" id="patient-name" placeholder="患者氏名" required>
                 </div>
                 <div class="grid">
-                    <input type="date" id="start-date" placeholder="治療開始日" required>
-                    <input type="number" id="total-stages" placeholder="予定枚数" required>
+                    <input type="number" id="current-stage-input" placeholder="現在のステージ番号" required>
+                    <input type="date" id="current-stage-start-date" required>
                 </div>
                 <div class="grid">
-                    <select id="exchange-interval" required><option value="" disabled selected>交換日数</option><option value="7">7日</option><option value="10">10日</option></select>
-                    <select id="wear-time" required><option value="" disabled selected>目標装着時間</option><option value="20">20時間</option><option value="22">22時間</option></select>
+                    <input type="number" id="total-stages" placeholder="予定枚数" required>
+                    <select id="exchange-interval" required>
+                        <option value="" disabled selected>交換日数</option>
+                        <option value="7">7日</option>
+                        <option value="10">10日</option>
+                    </select>
                 </div>
+                <select id="wear-time" required>
+                    <option value="" disabled selected>目標装着時間</option>
+                    <option value="20">20時間</option>
+                    <option value="22">22時間</option>
+                </select>
                 <button type="submit">この内容で登録する</button>
             </form>
         </article>

@@ -2,8 +2,8 @@
 // グローバル変数定義
 // ==================================================================
 let db; 
-let fullPatientList = []; // 管理者画面の全患者リストを保存するための変数
-let currentPatientDocId = null; // LIFF画面で使う、ログイン中患者のFirestoreドキュメントID
+let fullPatientList = [];
+let currentPatientDocId = null;
 
 // ==================================================================
 // Firebaseの初期化処理
@@ -52,12 +52,23 @@ const addPatientForm = document.getElementById("add-patient-form");
 if (addPatientForm) {
   addPatientForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    
+    // フォームから入力値を取得
+    const exchangeInterval = parseInt(document.getElementById("exchange-interval").value, 10);
+    const currentStage = parseInt(document.getElementById("current-stage-input").value, 10);
+    const currentStageStartDate = new Date(document.getElementById("current-stage-start-date").value);
+
+    // 「本来の治療開始日（ステージ1の開始日）」を逆算する
+    const daysToSubtract = (currentStage - 1) * exchangeInterval;
+    const virtualStartDate = new Date(currentStageStartDate);
+    virtualStartDate.setDate(currentStageStartDate.getDate() - daysToSubtract);
+    
     const newPatient = {
         id: document.getElementById("patient-id").value,
         name: document.getElementById("patient-name").value,
-        startDate: document.getElementById("start-date").value,
+        startDate: virtualStartDate.toISOString().split('T')[0],
         totalStages: document.getElementById("total-stages").value,
-        exchangeInterval: parseInt(document.getElementById("exchange-interval").value, 10),
+        exchangeInterval: exchangeInterval,
         wearTime: parseInt(document.getElementById("wear-time").value, 10),
         createdAt: new Date(),
         missedDays: 0
@@ -65,6 +76,7 @@ if (addPatientForm) {
     try {
         await db.collection("patients").add(newPatient);
         await loadAndRenderPatientsForAdmin();
+        alert("患者情報が正常に登録されました。");
     } catch (error) {
         console.error("Firestoreへの保存に失敗しました: ", error);
         alert("データの登録に失敗しました。");
@@ -147,7 +159,6 @@ async function loadPatientDetail() {
         document.getElementById("detail-total-stages").textContent = patient.totalStages;
         document.getElementById("detail-exchange-interval").textContent = patient.exchangeInterval;
         document.getElementById("detail-missed-days").textContent = patient.missedDays || 0;
-        
         renderScheduleTable(patient, "schedule-table-body");
     } catch (error) {
         console.error("患者詳細の読み込みに失敗しました:", error);
@@ -161,13 +172,9 @@ async function loadPatientDetail() {
 async function initializeLiff() {
   try {
     await liff.init({ liffId: "2007606450-pl2Dn7YW" });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
+    if (!liff.isLoggedIn()) { liff.login(); return; }
     const profile = await liff.getProfile();
     document.getElementById("user-id").textContent = profile.userId;
-
     const patientQuery = await db.collection("patients").where("lineUserId", "==", profile.userId).get();
     if (patientQuery.empty) {
       document.getElementById('initial-registration').style.display = 'block';
@@ -181,10 +188,7 @@ async function initializeLiff() {
       displayTreatmentStatus(patientData);
       renderScheduleTable(patientData, "liff-schedule-table-body");
     }
-  } catch (error) {
-    console.error("LIFFの処理に失敗しました:", error);
-    alert("エラーが発生しました。画面をリロードしてください。");
-  }
+  } catch (error) { console.error("LIFFの処理に失敗しました:", error); }
 }
 
 const registrationForm = document.getElementById("registration-form");
@@ -225,10 +229,7 @@ if (reportButton) {
             displayTreatmentStatus(updatedPatientData);
             renderScheduleTable(updatedPatientData, "liff-schedule-table-body");
             alert(`${daysToAdd}日間のつけ忘れを記録しました。合計: ${newMissedDays}日`);
-        } catch (error) {
-            console.error("つけ忘れ日数の更新に失敗しました:", error);
-            alert("エラーが発生しました。");
-        }
+        } catch (error) { console.error("つけ忘れ日数の更新に失敗しました:", error); }
     });
 }
 
